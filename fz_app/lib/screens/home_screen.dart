@@ -1,250 +1,218 @@
-import 'package:flutter/material.dart';
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  // ডামি পোস্টের ডেটা লিস্ট, যেখানে লাইক এবং কমেন্ট স্টেট রাখা হয়েছে
-  final List<Map<String, dynamic>> _posts = [
-    {
-      'name': 'Shakil Hossain',
-      'time': '2 hours ago',
-      'content': 'Exploring the wonderful features of our new Flutter social app, Friends Zone! 🚀',
-      'likes': 15,
-      'isLiked': false,
-      'comments': ['Looks amazing!', 'Great work on the UI!'],
-    },
-    {
-      'name': 'Rahim Ahmed',
-      'time': '5 hours ago',
-      'content': 'Beautiful weather today in Ishwardi. Enjoying coding with Flutter! 💻✨',
-      'likes': 28,
-      'isLiked': true,
-      'comments': ['Awesome!', 'Keep it up!'],
-    },
-    {
-      'name': 'Nusrat Jahan',
-      'time': '1 day ago',
-      'content': 'Just published a new update. Everything is running so smoothly.',
-      'likes': 42,
-      'isLiked': false,
-      'comments': ['Very nice!'],
-    },
-  ];
-
-  // লাইক টগল করার ফাংশন
-  void _toggleLike(int index) {
-    setState(() {
-      final post = _posts[index];
-      if (post['isLiked'] == true) {
-        post['isLiked'] = false;
-        post['likes'] -= 1;
-      } else {
-        post['isLiked'] = true;
-        post['likes'] += 1;
-      }
-    });
-  }
-
-  // কমেন্ট দেখার বা যোগ করার বটম শিট ওপেন করার ফাংশন
-  void _openComments(int index) {
-    final TextEditingController commentController = TextEditingController();
-    final post = _posts[index];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.grey[900],
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: SizedBox(
-            height: 400,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Comments',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const Divider(color: Colors.grey),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: (post['comments'] as List).length,
-                    itemBuilder: (context, cIndex) {
-                      return ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.deepPurple,
-                          child: Icon(Icons.person, size: 18, color: Colors.white),
-                        ),
-                        title: Text(
-                          post['comments'][cIndex],
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: commentController,
-                        decoration: InputDecoration(
-                          hintText: 'Write a comment...',
-                          hintStyle: const TextStyle(color: Colors.grey),
-                          filled: true,
-                          fillColor: Colors.grey[850],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.send, color: Colors.deepPurpleAccent),
-                      onPressed: () {
-                        if (commentController.text.trim().isNotEmpty) {
-                          setState(() {
-                            post['comments'].add(commentController.text.trim());
-                          });
-                          commentController.clear();
-                          Navigator.pop(context);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // শেয়ার করার ফাংশন
-  void _sharePost(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Post link copied to clipboard!')),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Friends Zone Feed'),
-        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFF0B0B14),
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text('FZ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            ),
+            const SizedBox(width: 8),
+            const Text('Friends Zone', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+          ],
+        ),
+        actions: [
+          IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () {}),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B1B30),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: const [
+                Icon(Icons.monetization_on, color: Colors.amber, size: 16),
+                SizedBox(width: 4),
+                Text('FZ 250', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                SizedBox(width: 4),
+                Icon(Icons.add_circle, color: Color(0xFFE040FB), size: 16),
+              ],
+            ),
+          ),
+        ],
       ),
-      body: ListView.builder(
-        itemCount: _posts.length,
-        itemBuilder: (context, index) {
-          final post = _posts[index];
-          final isLiked = post['isLiked'] as bool;
-          final likesCount = post['likes'] as int;
-          final commentsCount = (post['comments'] as List).length;
-
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            color: Colors.grey[900],
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // পোস্ট হেডার (প্রোফাইল ছবি ও নাম)
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: Colors.deepPurple,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Stories Section
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 6,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Column(
                         children: [
-                          Text(
-                            post['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          Stack(
+                            children: [
+                              Container(
+                                width: 65,
+                                height: 65,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(2.5),
+                                  child: CircleAvatar(backgroundColor: Color(0xFF131324)),
+                                ),
+                              ),
+                              const Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: CircleAvatar(
+                                  radius: 10,
+                                  backgroundColor: Color(0xFFE040FB),
+                                  child: Icon(Icons.add, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            post['time'],
-                            style: const TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
+                          const SizedBox(height: 4),
+                          const Text('My Story', style: TextStyle(fontSize: 11, color: Colors.white70)),
                         ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // পোস্টের মূল টেক্সট
-                  Text(
-                    post['content'],
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(color: Colors.grey),
-                  
-                  // লাইক, কমেন্ট ও শেয়ার বাটন বার
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // লাইক বাটন
-                      TextButton.icon(
-                        onPressed: () => _toggleLike(index),
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: isLiked ? Colors.red : Colors.grey,
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 65,
+                          height: 65,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(2.5),
+                            child: CircleAvatar(
+                              backgroundImage: NetworkImage('https://picsum.photos/200?random=$index'),
+                            ),
+                          ),
                         ),
-                        label: Text(
-                          '$likesCount',
-                          style: TextStyle(color: isLiked ? Colors.red : Colors.grey),
-                        ),
-                      ),
-                      
-                      // কমেন্ট বাটন
-                      TextButton.icon(
-                        onPressed: () => _openComments(index),
-                        icon: const Icon(Icons.chat_bubble_outline, color: Colors.grey),
-                        label: Text(
-                          '$commentsCount',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                      
-                      // শেয়ার বাটন
-                      TextButton.icon(
-                        onPressed: () => _sharePost(context),
-                        icon: const Icon(Icons.share_outlined, color: Colors.grey),
-                        label: const Text(
-                          'Share',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(height: 4),
+                        Text('User $index', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+            const Divider(color: Colors.white12),
+            // Post Creator Box
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131324),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const CircleAvatar(radius: 20, backgroundImage: NetworkImage('https://picsum.photos/200?random=10')),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1B1B30),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text('Share something with Friends Zone...', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: const [
+                        Row(children: [Icon(Icons.image, color: Colors.green, size: 18), SizedBox(width: 4), Text('Photo', style: TextStyle(fontSize: 12))]),
+                        Row(children: [Icon(Icons.videocam, color: Colors.pink, size: 18), SizedBox(width: 4), Text('Video', style: TextStyle(fontSize: 12))]),
+                        Row(children: [Icon(Icons.emoji_emotions, color: Colors.amber, size: 18), SizedBox(width: 4), Text('Feeling', style: TextStyle(fontSize: 12))]),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Post Card Example
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131324),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      leading: const CircleAvatar(backgroundImage: NetworkImage('https://picsum.photos/200?random=20')),
+                      title: const Text('Arif Hasan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      subtitle: const Text('2h ago • 🌐', style: TextStyle(fontSize: 11, color: Colors.white54)),
+                      trailing: const Icon(Icons.more_horiz, color: Colors.white54),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Nature always reminds us how beautiful life is... 🌿', style: TextStyle(color: Colors.white, fontSize: 13)),
+                    ),
+                    const SizedBox(height: 10),
+                    Stack(
+                      children: [
+                        Image.network('https://picsum.photos/600/350', height: 220, width: double.infinity, fit: BoxFit.cover),
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(10)),
+                            child: const Text('1/4', style: TextStyle(fontSize: 10, color: Colors.white)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Row(children: [Icon(Icons.favorite, color: Colors.pink, size: 18), SizedBox(width: 4), Text('842', style: TextStyle(fontSize: 12))]),
+                          Row(children: [Icon(Icons.chat_bubble_outline, color: Colors.white54, size: 18), SizedBox(width: 4), Text('67', style: TextStyle(fontSize: 12))]),
+                          Icon(Icons.bookmark_border, color: Colors.white54, size: 18),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
