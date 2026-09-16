@@ -1,44 +1,117 @@
-name: Build Friends Zone APK
+name: Friends Zone Android Release
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: friends-zone-android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Analyze and Build Release APK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      FZ_SUPABASE_URL: ${{ secrets.FZ_SUPABASE_URL }}
+      FZ_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.FZ_SUPABASE_PUBLISHABLE_KEY }}
 
     steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - name: Set up Java Environment
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Flutter SDK
+      - name: Setup Flutter 3.47.2
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'any'
-          channel: 'stable'
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
 
-      - name: Fix Android Directory if Missing
+      - name: Verify Flutter toolchain
         run: |
-          cd fz_app
-          if [ ! -d "android" ]; then
-            flutter create . --org com.example --platforms=android
-          fi
+          flutter --version
+          dart --version
 
-      - name: Get Dependencies and Build APK
+      - name: Generate Android host project
         run: |
-          cd fz_app
-          flutter pub get
-          flutter build apk --release --no-pub
+          flutter create \
+            --platforms=android \
+            --project-name friends_zone \
+            --org com.friendszone \
+            --android-language kotlin \
+            .
 
-      - name: Upload APK Artifact
+      - name: Configure Android location permissions
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          text = path.read_text()
+          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android">'
+          permissions = '''
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+          '''
+
+          if 'android.permission.ACCESS_FINE_LOCATION' not in text:
+              if marker not in text:
+                  raise SystemExit('AndroidManifest.xml manifest marker not found.')
+              text = text.replace(marker, marker + permissions, 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Validate required GitHub Secrets
+        shell: bash
+        run: |
+          test -n "$FZ_SUPABASE_URL" || { echo 'Missing FZ_SUPABASE_URL'; exit 1; }
+          test -n "$FZ_SUPABASE_PUBLISHABLE_KEY" || { echo 'Missing FZ_SUPABASE_PUBLISHABLE_KEY'; exit 1; }
+
+      - name: Validate Supabase URL format
+        shell: bash
+        run: |
+          case "$FZ_SUPABASE_URL" in
+            https://*) ;;
+            *) echo 'FZ_SUPABASE_URL must start with https://'; exit 1 ;;
+          esac
+
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      - name: Analyze Dart and Flutter code
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        run: flutter test
+
+      - name: Build release APK
+        run: |
+          flutter build apk --release \
+            --dart-define="FZ_SUPABASE_URL=$FZ_SUPABASE_URL" \
+            --dart-define="FZ_SUPABASE_PUBLISHABLE_KEY=$FZ_SUPABASE_PUBLISHABLE_KEY"
+
+      - name: Validate release APK
+        shell: bash
+        run: |
+          APK='build/app/outputs/flutter-apk/app-release.apk'
+          test -f "$APK" || { echo 'Release APK was not produced.'; exit 1; }
+          test -s "$APK" || { echo 'Release APK is empty.'; exit 1; }
+          echo "APK: $APK"
+          ls -lh "$APK"
+
+      - name: Upload release APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: fz_app/build/app/outputs/flutter-apk/app-release.apk
+          name: friends-zone-release-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
