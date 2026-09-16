@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../main_navigation.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -94,7 +95,13 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ),
                   onPressed: () {
-                    // অথেন্টিকেশন লজিক পরবর্তীতে যুক্ত হবে
+                    // সফলভাবে লগইন বা সাইন-আপ করার পর মেইন নেভিগেশনে নিয়ে যাবে
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MainNavigation(),
+                      ),
+                    );
                   },
                   child: Text(
                     _isLogin ? 'Login' : 'Sign Up',
