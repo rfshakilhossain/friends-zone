@@ -24,6 +24,13 @@ jobs:
           flutter-version: 'any'
           channel: 'stable'
 
+      - name: Fix Android Directory if Missing
+        run: |
+          cd fz_app
+          if [ ! -d "android" ]; then
+            flutter create . --org com.example --platforms=android
+          fi
+
       - name: Get Dependencies and Build APK
         run: |
           cd fz_app
