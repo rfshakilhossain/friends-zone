@@ -33,7 +33,7 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // ৪ বা তার বেশি আইটেমের জন্য এটি প্রয়োজন
+        type: BottomNavigationBarType.fixed, // ছোট হাতের f দিয়ে fixed হবে
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
