@@ -21,8 +21,8 @@ class FriendsZoneApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // সাময়িকভাবে আমরা AuthScreen বা MainNavigation যে কোনো একটি রুট হিসেবে সেট করতে পারি
-      home: const AuthScreen(), 
+      // প্রাথমিক রাউট হিসেবে আমরা আপাতত AuthScreen সেট করে রাখছি
+      home: const AuthScreen(),
     );
   }
 }
