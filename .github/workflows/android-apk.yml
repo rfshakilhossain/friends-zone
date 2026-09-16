@@ -1,7 +1,7 @@
 name: Build Friends Zone APK
 
 on:
-xf  push:
+  push:
     branches: [ main ]
 
 jobs:
