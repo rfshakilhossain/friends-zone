@@ -1,76 +1,125 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/user_service.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
+
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  bool _login = true;
-  bool _loading = false;
-
-  Future<void> _submit() async {
-    if (_email.text.trim().isEmpty || _password.text.length < 6 || (!_login && _name.text.trim().isEmpty)) {
-      _toast('সঠিক তথ্য দিন। Password কমপক্ষে ৬ অক্ষরের হতে হবে।');
-      return;
-    }
-    setState(() => _loading = true);
-    try {
-      final auth = Supabase.instance.client.auth;
-      if (_login) {
-        await auth.signInWithPassword(email: _email.text.trim(), password: _password.text);
-      } else {
-        final response = await auth.signUp(
-          email: _email.text.trim(),
-          password: _password.text,
-          data: {'display_name': _name.text.trim()},
-        );
-        if (response.user != null) {
-          await UserService.instance.ensureProfile(response.user!, displayName: _name.text.trim());
-        }
-        if (response.session == null && mounted) {
-          _toast('Email confirmation চালু আছে। আপনার email verify করে আবার login করুন।');
-        }
-      }
-    } on AuthException catch (e) {
-      _toast(e.message);
-    } catch (e) {
-      _toast('ত্রুটি: $e');
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  void _toast(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
-
-  @override
-  void dispose() { _name.dispose(); _email.dispose(); _password.dispose(); super.dispose(); }
+  bool _isLogin = true; // লগইন নাকি সাইন-আপ মোড তা ট্র্যাক করার জন্য
 
   @override
   Widget build(BuildContext context) {
-    const pink = Color(0xFFFF2E93);
     return Scaffold(
-      body: Center(child: SingleChildScrollView(padding: const EdgeInsets.all(24), child: Column(children: [
-        const Text('FRIENDS ZONE', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: pink, letterSpacing: 2)),
-        const SizedBox(height: 8),
-        Text(_login ? 'Real-time social world' : 'Create your real account', style: const TextStyle(color: Colors.white70)),
-        const SizedBox(height: 32),
-        if (!_login) ...[_field(_name, 'Display name'), const SizedBox(height: 16)],
-        _field(_email, 'Email'), const SizedBox(height: 16),
-        _field(_password, 'Password', obscure: true), const SizedBox(height: 24),
-        SizedBox(width: double.infinity, height: 52, child: ElevatedButton(onPressed: _loading ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: pink, foregroundColor: Colors.white),
-          child: _loading ? const CircularProgressIndicator() : Text(_login ? 'LOGIN' : 'CREATE ACCOUNT', style: const TextStyle(fontWeight: FontWeight.bold)))),
-        TextButton(onPressed: _loading ? null : () => setState(() => _login = !_login), child: Text(_login ? 'New user? Sign up' : 'Already have an account? Login', style: const TextStyle(color: pink))),
-      ])),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // অ্যাপের লোগো বা নাম
+              const Icon(
+                Icons.forum,
+                size: 80,
+                color: Colors.deepPurple,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Friends Zone',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _isLogin ? 'Welcome back! Please login to continue.' : 'Create an account to join Friends Zone.',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              
+              // নাম ফিল্ড (শুধুমাত্র সাইন-আপ মোডের জন্য দেখাবে)
+              if (!_isLogin) ...[
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // ইমেইল ফিল্ড
+              TextField(
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // পাসওয়ার্ড ফিল্ড
+              TextField(
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // সাবমিট বাটন (লগইন / সাইন আপ)
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    // অথেন্টিকেশন লজিক পরবর্তীতে যুক্ত হবে
+                  },
+                  child: Text(
+                    _isLogin ? 'Login' : 'Sign Up',
+                    style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // মোড পরিবর্তন করার বাটন (লগইন থেকে সাইন-আপ বা উল্টোটা)
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isLogin = !_isLogin;
+                  });
+                },
+                child: Text(
+                  _isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login",
+                  style: const TextStyle(color: Colors.deepPurpleAccent),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
-  Widget _field(TextEditingController controller, String label, {bool obscure = false}) => TextField(controller: controller, obscureText: obscure, decoration: InputDecoration(labelText: label, filled: true, fillColor: Colors.white.withOpacity(.05), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15))));
 }
