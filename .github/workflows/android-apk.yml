@@ -1,81 +1,41 @@
-name: Friends Zone Android APK
+name: Build Flutter APK
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-
-defaults:
-  run:
-    working-directory: fz_app
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout repository code
+        uses: actions/checkout@v3
 
-      - name: Setup Flutter
+      - name: Set up Java Environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
+          flutter-version: '3.19.x'
+          channel: 'stable'
 
-      - name: Check Flutter project
+      - name: Install Dependencies
         run: |
-          test -f pubspec.yaml
-          test -f lib/main.dart
-          echo "Flutter project detected in fz_app"
+          cd fz_app
+          flutter pub get
 
-      - name: Generate Android platform
-        run: flutter create --platforms=android --project-name friends_zone .
-
-      - name: Add location permissions
+      - name: Build Release APK
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
+          cd fz_app
+          flutter build apk --release
 
-          p = Path("android/app/src/main/AndroidManifest.xml")
-          s = p.read_text()
-
-          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android">'
-
-          perms = '''
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-          '''
-
-          if "ACCESS_FINE_LOCATION" not in s:
-              s = s.replace(marker, marker + perms)
-
-          p.write_text(s)
-          PY
-
-      - name: Get packages
-        run: flutter pub get
-
-      - name: Analyze
-        run: flutter analyze
-
-      - name: Build release APK
-        run: |
-          flutter build apk --release \
-            --dart-define=FZ_SUPABASE_URL=${{ secrets.FZ_SUPABASE_URL }} \
-            --dart-define=FZ_SUPABASE_PUBLISHABLE_KEY=${{ secrets.FZ_SUPABASE_PUBLISHABLE_KEY }}
-
-      - name: Verify APK
-        run: |
-          test -f build/app/outputs/flutter-apk/app-release.apk
-          ls -lh build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: friends-zone-release-apk
+          name: app-release
           path: fz_app/build/app/outputs/flutter-apk/app-release.apk
