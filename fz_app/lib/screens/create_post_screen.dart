@@ -1,95 +1,198 @@
 import 'package:flutter/material.dart';
 
-class CreatePostScreen extends StatelessWidget {
+class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
+
+  @override
+  State<CreatePostScreen> createState() => _CreatePostScreenState();
+}
+
+class _CreatePostScreenState extends State<CreatePostScreen> {
+  // পোস্টের ক্যাপশন বা টেক্সট কন্ট্রোলার
+  final TextEditingController _postController = TextEditingController();
+  
+  // ডামি মিডিয়া স্টেট (ছবি বা ভিডিও যুক্ত আছে কিনা তা ট্র্যাক করার জন্য)
+  String? _attachedMediaType; // 'image' অথবা 'video'
+  bool _hasMedia = false;
+
+  @override
+  void dispose() {
+    _postController.dispose();
+    super.dispose();
+  }
+
+  // ছবি বা ভিডিও যুক্ত করার সিমুলেশন ফাংশন
+  void _attachMedia(String type) {
+    setState(() {
+      _attachedMediaType = type;
+      _hasMedia = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$type attached successfully! You can edit or change it.')),
+    );
+  }
+
+  // মিডিয়া রিমোভ বা এডিট করার ফাংশন
+  void _removeMedia() {
+    setState(() {
+      _hasMedia = false;
+      _attachedMediaType = null;
+    });
+  }
+
+  // পোস্ট সাবমিট করার ফাংশন
+  void _submitPost() {
+    if (_postController.text.trim().isEmpty && !_hasMedia) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write something or attach media to post!')),
+      );
+      return;
+    }
+
+    // সফলভাবে পোস্ট ক্রিয়েট হওয়ার পর ফিডে ফিরে যাওয়ার লজিক
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Post created successfully!')),
+    );
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Post'),
+        backgroundColor: Colors.grey[900],
         actions: [
-          TextButton(
-            onPressed: () {
-              // পোস্ট পাবলিশ করার লজিক পরবর্তীতে যুক্ত হবে
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Post',
-              style: TextStyle(
-                color: Colors.deepPurple,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              onPressed: _submitPost,
+              child: const Text('Post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ইউজারের তথ্য
-            const Row(
-              children: [
+            Row(
+              children: const [
                 CircleAvatar(
-                  radius: 20,
                   backgroundColor: Colors.deepPurple,
                   child: Icon(Icons.person, color: Colors.white),
                 ),
                 SizedBox(width: 12),
                 Text(
                   'Biplob Hossain Billal',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            // লেখার টেক্সট ফিল্ড
-            const Expanded(
-              child: TextField(
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: 'What is on your mind in Friends Zone?',
-                  border: InputBorder.none,
-                ),
+            const SizedBox(height: 16),
+
+            // টেক্সট লেখার ফিল্ড
+            TextField(
+              controller: _postController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                hintText: 'What is on your mind, Biplob?',
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
               ),
             ),
-            // মিডিয়া বা ছবি যুক্ত করার অপশন বার
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey.shade800, width: 1),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+            const SizedBox(height: 16),
+
+            // যদি কোনো ছবি বা ভিডিও যুক্ত করা হয়, তার প্রিভিউ বক্স এবং এডিট/রিমোভ অপশন
+            if (_hasMedia)
+              Stack(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.image, color: Colors.deepPurple),
-                    onPressed: () {
-                      // গ্যালারি থেকে ছবি তোলার লজিক
-                    },
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[800],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _attachedMediaType == 'image' ? Icons.image : Icons.videocam,
+                            size: 50,
+                            color: Colors.deepPurpleAccent,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Attached ${_attachedMediaType == 'image' ? 'Photo' : 'Video'} Preview',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.camera_alt, color: Colors.deepPurple),
-                    onPressed: () {
-                      // ক্যামেরা ব্যবহারের লজিক
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.emoji_emotions, color: Colors.deepPurple),
-                    onPressed: () {
-                      // ইমোজি যুক্ত করার লজিক
-                    },
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: _removeMedia,
+                        tooltip: 'Remove/Change Media',
+                      ),
+                    ),
                   ),
                 ],
               ),
+
+            const SizedBox(height: 24),
+            const Divider(color: Colors.grey),
+            const SizedBox(height: 8),
+
+            // মিডিয়া যুক্ত করার অপশন বার (Photo / Video Add Buttons)
+            const Text(
+              'Add to your post',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: Colors.deepPurple),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => _attachMedia('image'),
+                    icon: const Icon(Icons.photo, color: Colors.deepPurpleAccent),
+                    label: const Text('Photo', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: Colors.deepPurple),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => _attachMedia('video'),
+                    icon: const Icon(Icons.video_call, color: Colors.deepPurpleAccent),
+                    label: const Text('Video', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -97,4 +200,3 @@ class CreatePostScreen extends StatelessWidget {
     );
   }
 }
-
