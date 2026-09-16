@@ -19,7 +19,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomeScreen(),
     const CreatePostScreen(),
     const ChatsScreen(),
-    const ProfileScreen(),
+    const ProfileScreen(), // এখানে ProfileScreen হবে (শেষে s হবে না)
   ];
 
   void _onItemTapped(int index) {
@@ -33,7 +33,7 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // ছোট হাতের f দিয়ে fixed হবে
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
