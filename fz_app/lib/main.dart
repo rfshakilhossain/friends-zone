@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_screen.dart';
-import 'main_navigation.dart';
 
 void main() {
   runApp(const FriendsZoneApp());
@@ -14,14 +13,17 @@ class FriendsZoneApp extends StatelessWidget {
     return MaterialApp(
       title: 'Friends Zone',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData(
         useMaterial3: true,
+        brightness: Brightness.dark,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.black,
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.deepPurple,
+          secondary: Colors.deepPurpleAccent,
+        ),
       ),
-      // প্রাথমিক রাউট হিসেবে আমরা আপাতত AuthScreen সেট করে রাখছি
       home: const AuthScreen(),
     );
   }
