@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: fz_app
+
 jobs:
   build:
     name: Build Friends Zone APK
@@ -26,6 +30,12 @@ jobs:
 
       - name: Show Flutter version
         run: flutter --version
+
+      - name: Check Flutter project
+        run: |
+          test -f pubspec.yaml
+          test -f lib/main.dart
+          echo "Flutter project detected in fz_app"
 
       - name: Generate Android platform
         run: flutter create --platforms=android --project-name friends_zone .
@@ -48,9 +58,7 @@ jobs:
 
           if "android.permission.ACCESS_FINE_LOCATION" not in text:
               if marker not in text:
-                  raise SystemExit(
-                      "AndroidManifest.xml marker was not found."
-                  )
+                  raise SystemExit("AndroidManifest.xml marker was not found.")
 
               text = text.replace(
                   marker,
@@ -111,5 +119,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: friends-zone-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: fz_app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
