@@ -26,8 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final position =
-          await LocationService.instance
-              .publishCurrentLocation();
+          await LocationService.instance.publishCurrentLocation();
 
       if (!mounted) return;
 
@@ -50,9 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Unable to update location.',
-          ),
+          content: Text('Unable to update location.'),
         ),
       );
     } finally {
@@ -117,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final currentId =
               SupabaseService.instance.client.auth.currentUser?.id;
 
-          final allUsers = snapshot.data ?? const [];
+          final allUsers = snapshot.data ?? const <Map<String, dynamic>>[];
 
           final nearby = allUsers.where((user) {
             if (user['id'] == currentId) {
@@ -133,8 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return false;
             }
 
-            final distance =
-                LocationService.distanceKm(
+            final distance = LocationService.distanceKm(
               _lat!,
               _lon!,
               (user['latitude'] as num).toDouble(),
@@ -153,46 +149,41 @@ class _HomeScreenState extends State<HomeScreen> {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(
-                      alpha: .05,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(16),
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: pink.withValues(
-                        alpha: .35,
-                      ),
+                      color: pink.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Row(
                     mainAxisAlignment:
                         MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment:
                               CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Live Radar Active',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight:
-                                    FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               'Showing visible users within 10 km',
                               style: TextStyle(
-                                color: Colors.white64,
+                                color: Colors.white.withValues(
+                                  alpha: 0.64,
+                                ),
                                 fontSize: 12,
                               ),
                             ),
@@ -204,20 +195,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child:
-                                  CircularProgressIndicator(
+                              child: CircularProgressIndicator(
                                 color: pink,
                                 strokeWidth: 2,
                               ),
                             )
                           : ElevatedButton(
                               onPressed: _scan,
-                              style:
-                                  ElevatedButton.styleFrom(
+                              style: ElevatedButton.styleFrom(
                                 backgroundColor: pink,
                               ),
-                              child:
-                                  const Text('Scan'),
+                              child: const Text('Scan'),
                             ),
                     ],
                   ),
@@ -236,8 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ConnectionState.waiting)
                   const Expanded(
                     child: Center(
-                      child:
-                          CircularProgressIndicator(),
+                      child: CircularProgressIndicator(),
                     ),
                   )
                 else if (_lat == null || _lon == null)
@@ -275,25 +262,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'Friends Zone User')
                                 .toString();
 
-                        final distance =
-                            _distance(user);
+                        final distance = _distance(user);
 
                         return Container(
-                          margin:
-                              const EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             bottom: 12,
                           ),
-                          padding:
-                              const EdgeInsets.all(12),
-                          decoration:
-                              BoxDecoration(
-                            color: Colors.black
-                                .withValues(alpha: .3),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(
+                              alpha: 0.3,
+                            ),
                             borderRadius:
                                 BorderRadius.circular(14),
                             border: Border.all(
                               color: pink.withValues(
-                                alpha: .2,
+                                alpha: 0.2,
                               ),
                             ),
                           ),
@@ -305,13 +289,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Text(
                                   name.isEmpty
                                       ? '?'
-                                      : name[0]
-                                          .toUpperCase(),
-                                  style:
-                                      const TextStyle(
+                                      : name[0].toUpperCase(),
+                                  style: const TextStyle(
                                     color: Colors.white,
-                                    fontWeight:
-                                        FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
@@ -319,44 +300,32 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       name,
-                                      style:
-                                          const TextStyle(
-                                        color:
-                                            Colors.white,
+                                      style: const TextStyle(
+                                        color: Colors.white,
                                         fontWeight:
-                                            FontWeight
-                                                .bold,
+                                            FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       (user['bio'] ?? '')
                                               .toString()
                                               .isEmpty
                                           ? 'Friends Zone member'
-                                          : user['bio']
-                                              .toString(),
-                                      style:
-                                          const TextStyle(
-                                        color:
-                                            Colors.white54,
+                                          : user['bio'].toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white54,
                                         fontSize: 12,
                                       ),
                                     ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       '${distance.toStringAsFixed(2)} km away',
-                                      style:
-                                          const TextStyle(
+                                      style: const TextStyle(
                                         color: pink,
                                         fontSize: 11,
                                       ),
@@ -366,20 +335,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons
-                                      .chat_bubble_outline,
+                                  Icons.chat_bubble_outline,
                                   color: pink,
                                 ),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          ChatScreen(
+                                      builder: (_) => ChatScreen(
                                         userName: name,
                                         otherUid:
-                                            user['id']
-                                                .toString(),
+                                            user['id'].toString(),
                                       ),
                                     ),
                                   );
@@ -399,9 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  double _distance(
-    Map<String, dynamic> user,
-  ) {
+  double _distance(Map<String, dynamic> user) {
     if (_lat == null ||
         _lon == null ||
         user['latitude'] == null ||
