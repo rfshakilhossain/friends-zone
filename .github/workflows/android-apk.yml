@@ -27,12 +27,12 @@ jobs:
       - name: Install Dependencies
         run: |
           cd fz_app
-          flutter pub get --no-pubspec-overrides
+          flutter pub get
 
-      - name: Build Release APK
+      - name: Build Release APK without Analyze
         run: |
           cd fz_app
-          flutter build apk --release
+          flutter build apk --release --no-pub
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
