@@ -24,9 +24,10 @@ jobs:
           flutter-version: 'any'
           channel: 'stable'
 
-      - name: Build APK Directly Without Analysis
+      - name: Build APK Correct Path
         run: |
           cd fz_app
+          flutter clean
           flutter pub get
           flutter build apk --release --no-pub
 
