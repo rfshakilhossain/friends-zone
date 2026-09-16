@@ -10,6 +10,37 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true; // লগইন নাকি সাইন-আপ মোড তা ট্র্যাক করার জন্য
+  
+  // ইনপুট কন্ট্রোলারসমূহ
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() {
+    // সাধারণ ভ্যালিডেশন চেক
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields!')),
+      );
+      return;
+    }
+
+    // সফলভাবে লগইন বা সাইন-আপ করার পর মেইন নেভিগেশনে নিয়ে যাবে
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainNavigation(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +77,7 @@ class _AuthScreenState extends State<AuthScreen> {
               // নাম ফিল্ড (শুধুমাত্র সাইন-আপ মোডের জন্য দেখাবে)
               if (!_isLogin) ...[
                 TextField(
+                  controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     prefixIcon: const Icon(Icons.person_outline),
@@ -59,6 +91,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
               // ইমেইল ফিল্ড
               TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Email Address',
@@ -72,6 +105,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
               // পাসওয়ার্ড ফিল্ড
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -94,15 +128,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    // সফলভাবে লগইন বা সাইন-আপ করার পর মেইন নেভিগেশনে নিয়ে যাবে
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainNavigation(),
-                      ),
-                    );
-                  },
+                  onPressed: _submitForm,
                   child: Text(
                     _isLogin ? 'Login' : 'Sign Up',
                     style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
