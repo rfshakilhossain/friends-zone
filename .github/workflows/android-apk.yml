@@ -24,17 +24,11 @@ jobs:
           flutter-version: 'any'
           channel: 'stable'
 
-      - name: Get Dependencies
-        run: flutter pub get
-        defaults:
-          run:
-            working-directory: ./fz_app
-
-      - name: Build Release APK
-        run: flutter build apk --release --no-pub
-        defaults:
-          run:
-            working-directory: ./fz_app
+      - name: Get Dependencies and Build APK
+        run: |
+          cd fz_app
+          flutter pub get
+          flutter build apk --release --no-pub
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
