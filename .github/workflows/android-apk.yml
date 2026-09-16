@@ -21,18 +21,18 @@ jobs:
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0' # একটি স্টেবল এবং আধুনিক ফ্লাটার ভার্সন
+          flutter-version: '3.24.0'
           channel: 'stable'
 
       - name: Install Dependencies
         run: |
           cd fz_app
-          flutter pub get --no-pubspec-overrides
+          flutter pub get
 
-      - name: Build Release APK
+      - name: Build Release APK Directly
         run: |
           cd fz_app
-          flutter build apk --release --no-pub
+          flutter build apk --release --no-pub --target-platform android-arm,android-arm64,android-x64
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
