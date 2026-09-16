@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -32,12 +34,15 @@ class SupabaseService {
     final user = currentUser;
 
     if (user == null) {
-      throw StateError('You must be signed in to create a post.');
+      throw StateError(
+        'You must be signed in to create a post.',
+      );
     }
 
     final cleanCaption = caption.trim();
 
-    if (cleanCaption.isEmpty && (mediaUrl == null || mediaUrl.isEmpty)) {
+    if (cleanCaption.isEmpty &&
+        (mediaUrl == null || mediaUrl.isEmpty)) {
       throw ArgumentError('Post cannot be empty.');
     }
 
@@ -67,7 +72,9 @@ class SupabaseService {
     final user = currentUser;
 
     if (user == null) {
-      throw StateError('You must be signed in to like a post.');
+      throw StateError(
+        'You must be signed in to like a post.',
+      );
     }
 
     final existing = await client
@@ -91,14 +98,18 @@ class SupabaseService {
     }
   }
 
-  Stream<List<Map<String, dynamic>>> postLikesStream(String postId) {
+  Stream<List<Map<String, dynamic>>> postLikesStream(
+    String postId,
+  ) {
     return client
         .from('post_likes')
         .stream(primaryKey: ['post_id', 'user_id'])
         .eq('post_id', postId);
   }
 
-  Stream<List<Map<String, dynamic>>> commentsStream(String postId) {
+  Stream<List<Map<String, dynamic>>> commentsStream(
+    String postId,
+  ) {
     return client
         .from('post_comments')
         .stream(primaryKey: ['id'])
@@ -113,13 +124,17 @@ class SupabaseService {
     final user = currentUser;
 
     if (user == null) {
-      throw StateError('You must be signed in to comment.');
+      throw StateError(
+        'You must be signed in to comment.',
+      );
     }
 
     final cleanBody = body.trim();
 
     if (cleanBody.isEmpty) {
-      throw ArgumentError('Comment cannot be empty.');
+      throw ArgumentError(
+        'Comment cannot be empty.',
+      );
     }
 
     await client.from('post_comments').insert({
@@ -133,7 +148,9 @@ class SupabaseService {
   // CHAT
   // ==========================================================
 
-  Stream<List<Map<String, dynamic>>> messagesStream(String otherUid) {
+  Stream<List<Map<String, dynamic>>> messagesStream(
+    String otherUid,
+  ) {
     final me = currentUser?.id;
 
     if (me == null) {
@@ -149,15 +166,21 @@ class SupabaseService {
         .order('created_at', ascending: true);
   }
 
-  Future<void> ensureConversation(String otherUid) async {
+  Future<void> ensureConversation(
+    String otherUid,
+  ) async {
     final me = currentUser;
 
     if (me == null) {
-      throw StateError('You must be signed in to start a conversation.');
+      throw StateError(
+        'You must be signed in to start a conversation.',
+      );
     }
 
     if (me.id == otherUid) {
-      throw ArgumentError('You cannot start a conversation with yourself.');
+      throw ArgumentError(
+        'You cannot start a conversation with yourself.',
+      );
     }
 
     final id = conversationId(me.id, otherUid);
@@ -182,7 +205,9 @@ class SupabaseService {
         .eq('conversation_id', id);
 
     final memberIds = (existingMembers as List)
-        .map((row) => row['user_id']?.toString())
+        .map(
+          (row) => row['user_id']?.toString(),
+        )
         .whereType<String>()
         .toSet();
 
@@ -210,19 +235,26 @@ class SupabaseService {
     final me = currentUser;
 
     if (me == null) {
-      throw StateError('You must be signed in to send messages.');
+      throw StateError(
+        'You must be signed in to send messages.',
+      );
     }
 
     final cleanText = text.trim();
 
-    if (cleanText.isEmpty && (mediaUrl == null || mediaUrl.isEmpty)) {
-      throw ArgumentError('Message cannot be empty.');
+    if (cleanText.isEmpty &&
+        (mediaUrl == null || mediaUrl.isEmpty)) {
+      throw ArgumentError(
+        'Message cannot be empty.',
+      );
     }
 
     await ensureConversation(otherUid);
 
     final id = conversationId(me.id, otherUid);
-    final now = DateTime.now().toUtc().toIso8601String();
+    final now = DateTime.now()
+        .toUtc()
+        .toIso8601String();
 
     await client.from('messages').insert({
       'conversation_id': id,
@@ -249,34 +281,51 @@ class SupabaseService {
   Future<String> uploadUserFile(
     String path,
     List<int> bytes, {
-    String contentType = 'application/octet-stream',
+    String contentType =
+        'application/octet-stream',
   }) async {
     final user = currentUser;
 
     if (user == null) {
-      throw StateError('You must be signed in to upload files.');
+      throw StateError(
+        'You must be signed in to upload files.',
+      );
     }
 
     final cleanPath = path
         .replaceAll('\\', '/')
-        .replaceFirst(RegExp(r'^/+'), '');
+        .replaceFirst(
+          RegExp(r'^/+'),
+          '',
+        );
 
     if (cleanPath.isEmpty) {
-      throw ArgumentError('File path cannot be empty.');
+      throw ArgumentError(
+        'File path cannot be empty.',
+      );
     }
 
-    final storagePath = '${user.id}/$cleanPath';
+    final storagePath =
+        '${user.id}/$cleanPath';
 
-    await client.storage.from('user-files').uploadBinary(
+    final binaryData = bytes is Uint8List
+        ? bytes
+        : Uint8List.fromList(bytes);
+
+    await client.storage
+        .from('user-files')
+        .uploadBinary(
           storagePath,
-          bytes,
+          binaryData,
           fileOptions: FileOptions(
             contentType: contentType,
             upsert: true,
           ),
         );
 
-    return client.storage.from('user-files').createSignedUrl(
+    return client.storage
+        .from('user-files')
+        .createSignedUrl(
           storagePath,
           3600,
         );
