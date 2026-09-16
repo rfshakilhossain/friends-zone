@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_edit_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -8,93 +9,78 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
+        automaticallyImplyLeading: false,
         actions: [
+          // প্রোফাইল এডিট স্ক্রিনে যাওয়ার জন্য এডিট বাটন
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.edit),
             onPressed: () {
-              // সেটিংস অপশন পরবর্তীতে যুক্ত করা হবে
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileEditScreen(),
+                ),
+              );
             },
           ),
         ],
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
             // প্রোফাইল পিকচার
             const CircleAvatar(
               radius: 50,
               backgroundColor: Colors.deepPurple,
               child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
-            const SizedBox(height: 12),
-            // ইউজারের নাম
+            const SizedBox(height: 16),
             const Text(
               'Biplob Hossain Billal',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4),
-            // ইউজার বায়ো বা স্ট্যাটাস
+            const SizedBox(height: 8),
             const Text(
-              'Exploring Friends Zone & Connecting people.',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              'Exploring the new features of Friends Zone!',
+              style: TextStyle(color: Colors.grey),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
-            // ফলোয়ার, ফলোয়িং এবং পোস্ট কাউন্টার সেকশন
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    Text('150', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('Posts', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('1.2K', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('Followers', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('340', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('Following', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
+            const SizedBox(height: 24),
+            
+            // স্ট্যাটাস সেকশন (Posts, Followers, Following)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                _StatItem(label: 'Posts', count: '12'),
+                SizedBox(width: 24),
+                _StatItem(label: 'Followers', count: '345'),
+                SizedBox(width: 24),
+                _StatItem(label: 'Following', count: '180'),
               ],
             ),
-            const SizedBox(height: 20),
-            // এডিট প্রোফাইল বাটন
-            ElevatedButton(
-              onPressed: () {
-                // এডিট প্রোফাইল লজিক পরবর্তীতে যুক্ত হবে
-              },
-              child: const Text('Edit Profile'),
-            ),
-            const Divider(height: 40, thickness: 1),
-            // ইউজারের পোস্টগুলোর গ্রিড ভিউ (Placeholder Grid)
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 16),
+            
+            // ইউজারের পোস্ট গ্রিড
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 9, // সাময়িকভাবে ৯টি ছবি দেখানোর জন্য
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
               ),
+              itemCount: 6,
               itemBuilder: (context, index) {
                 return Container(
-                  color: Colors.grey[800],
-                  child: Center(
-                    child: Icon(
-                      Icons.image,
-                      color: Colors.grey[500],
-                    ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.image, color: Colors.grey),
                   ),
                 );
               },
@@ -102,6 +88,31 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// আলাদা উইজেট স্ট্যাট আইটেমের জন্য
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String count;
+
+  const _StatItem({required this.label, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.grey, fontSize: 14),
+        ),
+      ],
     );
   }
 }
