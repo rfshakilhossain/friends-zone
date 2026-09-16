@@ -1,4 +1,4 @@
-name: Build Flutter APK
+name: Build Friends Zone APK
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           flutter-version: 'any'
           channel: 'stable'
 
-      - name: Build APK
+      - name: Build APK Directly Without Analysis
         run: |
           cd fz_app
           flutter pub get
