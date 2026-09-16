@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/create_post_screen.dart';
+import 'screens/discover_screen.dart';
 import 'screens/chats_screen.dart';
 import 'screens/profile_screen.dart';
 
@@ -14,12 +15,13 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
-  // আমাদের তৈরি করা স্ক্রিনগুলোর লিস্ট (চারটি স্ক্রিন)
+  // আমাদের তৈরি করা স্ক্রিনগুলোর লিস্ট (পাঁচটি স্ক্রিন)
   final List<Widget> _screens = [
     const HomeScreen(),
     const CreatePostScreen(),
+    const DiscoverScreen(),
     const ChatsScreen(),
-    const ProfileScreen(), // এখানে ProfileScreen হবে (শেষে s হবে না)
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -42,6 +44,10 @@ class _MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.add_box_outlined),
             label: 'Create',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore),
+            label: 'Discover',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
