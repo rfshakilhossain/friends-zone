@@ -1,118 +1,146 @@
-import 'package:flutter/material.dart';
-import 'profile_edit_screen.dart';
-
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        automaticallyImplyLeading: false,
-        actions: [
-          // প্রোফাইল এডিট স্ক্রিনে যাওয়ার জন্য এডিট বাটন
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileEditScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            // প্রোফাইল পিকচার
-            const CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.deepPurple,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+            // Cover Photo & Header
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Image.network('https://picsum.photos/600/220', height: 180, width: double.infinity, fit: BoxFit.cover),
+                Positioned(
+                  top: 40,
+                  left: 10,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black54,
+                    child: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () {}),
+                  ),
+                ),
+                Positioned(
+                  bottom: -45,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(3),
+                      child: CircleAvatar(
+                        radius: 45,
+                        backgroundImage: NetworkImage('https://picsum.photos/200?random=30'),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Biplob Hossain Billal',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Exploring the new features of Friends Zone!',
-              style: TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            
-            // স্ট্যাটাস সেকশন (Posts, Followers, Following)
+            const SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                _StatItem(label: 'Posts', count: '12'),
-                SizedBox(width: 24),
-                _StatItem(label: 'Followers', count: '345'),
-                SizedBox(width: 24),
-                _StatItem(label: 'Following', count: '180'),
+                Text('Arif Hasan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                SizedBox(width: 4),
+                Icon(Icons.verified, color: Colors.blue, size: 18),
               ],
             ),
-            const SizedBox(height: 32),
-            const Divider(),
-            const SizedBox(height: 16),
-            
-            // ইউজারের পোস্ট গ্রিড
+            const Text('@arifhasan', style: TextStyle(fontSize: 12, color: Colors.white54)),
+            const SizedBox(height: 6),
+            const Text('Dreamer • Traveler • Tech Lover 🌿', style: TextStyle(fontSize: 12, color: Colors.white70)),
+            const SizedBox(height: 4),
+            const Text('📍 Dhaka, Bangladesh   🟢 Online', style: TextStyle(fontSize: 11, color: Colors.white54)),
+            const SizedBox(height: 15),
+            // Stats Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: const [
+                Column(children: [Text('1.2K', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Followers', style: TextStyle(fontSize: 11, color: Colors.white54))]),
+                Column(children: [Text('356', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Following', style: TextStyle(fontSize: 11, color: Colors.white54))]),
+                Column(children: [Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Posts', style: TextStyle(fontSize: 11, color: Colors.white54))]),
+              ],
+            ),
+            const SizedBox(height: 15),
+            // Action Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131324),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            // FZ Tokens & Rewards Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131324),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(children: const [
+                      Icon(Icons.monetization_on, color: Colors.amber),
+                      SizedBox(width: 8),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('FZ Tokens', style: TextStyle(fontSize: 11, color: Colors.white54)),
+                        Text('250 >', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ]),
+                    ]),
+                    Container(height: 30, width: 1, color: Colors.white12),
+                    Row(children: const [
+                      Icon(Icons.card_giftcard, color: Color(0xFFE040FB)),
+                      SizedBox(width: 8),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('Referral Rewards', style: TextStyle(fontSize: 11, color: Colors.white54)),
+                        Text('12 / 50', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ]),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+            // Posts Grid View
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              itemCount: 6,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
               ),
-              itemCount: 6,
               itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.image, color: Colors.grey),
-                  ),
-                );
+                return Image.network('https://picsum.photos/200?random=${index + 40}', fit: BoxFit.cover);
               },
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// আলাদা উইজেট স্ট্যাট আইটেমের জন্য
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String count;
-
-  const _StatItem({required this.label, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.grey, fontSize: 14),
-        ),
-      ],
     );
   }
 }
