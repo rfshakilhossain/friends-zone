@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/auth_screen.dart';
 import 'main_navigation.dart';
 
 void main() {
@@ -20,7 +21,8 @@ class FriendsZoneApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MainNavigation(),
+      // সাময়িকভাবে আমরা AuthScreen বা MainNavigation যে কোনো একটি রুট হিসেবে সেট করতে পারি
+      home: const AuthScreen(), 
     );
   }
 }
