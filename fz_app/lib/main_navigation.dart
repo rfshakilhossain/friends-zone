@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/create_post_screen.dart';
 import 'screens/profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -12,10 +13,11 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
-  // আমাদের তৈরি করা স্ক্রিনগুলোর লিস্ট
+  // আমাদের তৈরি করা স্ক্রিনগুলোর লিস্ট (তিনটি স্ক্রিন)
   final List<Widget> _screens = [
     const HomeScreen(),
-    const ProfileScreen(), // সাময়িকভাবে আমরা হোম এবং প্রোফাইল স্ক্রিন রাখছি
+    const CreatePostScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -35,12 +37,17 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.add_box_outlined),
+            label: 'Create',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );
