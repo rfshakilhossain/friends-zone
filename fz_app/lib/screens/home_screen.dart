@@ -1,219 +1,419 @@
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+
+import '../services/location_service.dart';
+import '../services/supabase_service.dart';
+import '../services/user_service.dart';
+import 'chats_screen.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _scanning = false;
+  double? _lat;
+  double? _lon;
+
+  Future<void> _scan() async {
+    if (_scanning) return;
+
+    setState(() {
+      _scanning = true;
+    });
+
+    try {
+      final position =
+          await LocationService.instance
+              .publishCurrentLocation();
+
+      if (!mounted) return;
+
+      setState(() {
+        _lat = position?.latitude;
+        _lon = position?.longitude;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            position == null
+                ? 'Location permission/service is unavailable.'
+                : 'Radar location updated.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Unable to update location.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _scanning = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    const bg = Color(0xFF0F051D);
+    const pink = Color(0xFFFF2E93);
+
     return Scaffold(
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B0B14),
+        backgroundColor: bg,
         elevation: 0,
-        title: Row(
+        title: const Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text('FZ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            Icon(
+              Icons.radar,
+              color: pink,
             ),
-            const SizedBox(width: 8),
-            const Text('Friends Zone', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            SizedBox(width: 8),
+            Text(
+              'Friends Zone : Nearby',
+              style: TextStyle(
+                color: pink,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () {}),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1B1B30),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: const [
-                Icon(Icons.monetization_on, color: Colors.amber, size: 16),
-                SizedBox(width: 4),
-                Text('FZ 250', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
-                SizedBox(width: 4),
-                Icon(Icons.add_circle, color: Color(0xFFE040FB), size: 16),
-              ],
+          IconButton(
+            onPressed: _scanning ? null : _scan,
+            icon: const Icon(
+              Icons.bolt,
+              color: pink,
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Stories Section
-            SizedBox(
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 6,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Column(
-                        children: [
-                          Stack(
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: UserService.instance.visibleUsersStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text(
+                'Unable to load nearby users.',
+                style: TextStyle(
+                  color: Colors.white54,
+                ),
+              ),
+            );
+          }
+
+          final currentId =
+              SupabaseService.instance.client.auth.currentUser?.id;
+
+          final allUsers = snapshot.data ?? const [];
+
+          final nearby = allUsers.where((user) {
+            if (user['id'] == currentId) {
+              return false;
+            }
+
+            if (_lat == null || _lon == null) {
+              return false;
+            }
+
+            if (user['latitude'] == null ||
+                user['longitude'] == null) {
+              return false;
+            }
+
+            final distance =
+                LocationService.distanceKm(
+              _lat!,
+              _lon!,
+              (user['latitude'] as num).toDouble(),
+              (user['longitude'] as num).toDouble(),
+            );
+
+            return distance <= 10;
+          }).toList();
+
+          nearby.sort(
+            (a, b) => _distance(a).compareTo(
+              _distance(b),
+            ),
+          );
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(
+                      alpha: .05,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    border: Border.all(
+                      color: pink.withValues(
+                        alpha: .35,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Live Radar Active',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight:
+                                    FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Showing visible users within 10 km',
+                              style: TextStyle(
+                                color: Colors.white64,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _scanning
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child:
+                                  CircularProgressIndicator(
+                                color: pink,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : ElevatedButton(
+                              onPressed: _scan,
+                              style:
+                                  ElevatedButton.styleFrom(
+                                backgroundColor: pink,
+                              ),
+                              child:
+                                  const Text('Scan'),
+                            ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'People Around You',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting)
+                  const Expanded(
+                    child: Center(
+                      child:
+                          CircularProgressIndicator(),
+                    ),
+                  )
+                else if (_lat == null || _lon == null)
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'Tap Scan to share your location and find nearby people.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (nearby.isEmpty)
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'No visible nearby users yet.',
+                        style: TextStyle(
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: nearby.length,
+                      itemBuilder: (context, index) {
+                        final user = nearby[index];
+
+                        final name =
+                            (user['display_name'] ??
+                                    'Friends Zone User')
+                                .toString();
+
+                        final distance =
+                            _distance(user);
+
+                        return Container(
+                          margin:
+                              const EdgeInsets.only(
+                            bottom: 12,
+                          ),
+                          padding:
+                              const EdgeInsets.all(12),
+                          decoration:
+                              BoxDecoration(
+                            color: Colors.black
+                                .withValues(alpha: .3),
+                            borderRadius:
+                                BorderRadius.circular(14),
+                            border: Border.all(
+                              color: pink.withValues(
+                                alpha: .2,
+                              ),
+                            ),
+                          ),
+                          child: Row(
                             children: [
-                              Container(
-                                width: 65,
-                                height: 65,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(2.5),
-                                  child: CircleAvatar(backgroundColor: Color(0xFF131324)),
+                              CircleAvatar(
+                                radius: 26,
+                                backgroundColor: pink,
+                                child: Text(
+                                  name.isEmpty
+                                      ? '?'
+                                      : name[0]
+                                          .toUpperCase(),
+                                  style:
+                                      const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight:
+                                        FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              const Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: CircleAvatar(
-                                  radius: 10,
-                                  backgroundColor: Color(0xFFE040FB),
-                                  child: Icon(Icons.add, size: 14, color: Colors.white),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style:
+                                          const TextStyle(
+                                        color:
+                                            Colors.white,
+                                        fontWeight:
+                                            FontWeight
+                                                .bold,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    Text(
+                                      (user['bio'] ?? '')
+                                              .toString()
+                                              .isEmpty
+                                          ? 'Friends Zone member'
+                                          : user['bio']
+                                              .toString(),
+                                      style:
+                                          const TextStyle(
+                                        color:
+                                            Colors.white54,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    Text(
+                                      '${distance.toStringAsFixed(2)} km away',
+                                      style:
+                                          const TextStyle(
+                                        color: pink,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons
+                                      .chat_bubble_outline,
+                                  color: pink,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          ChatScreen(
+                                        userName: name,
+                                        otherUid:
+                                            user['id']
+                                                .toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          const Text('My Story', style: TextStyle(fontSize: 11, color: Colors.white70)),
-                        ],
-                      ),
-                    );
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 65,
-                          height: 65,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(2.5),
-                            child: CircleAvatar(
-                              backgroundImage: NetworkImage('https://picsum.photos/200?random=$index'),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('User $index', style: const TextStyle(fontSize: 11, color: Colors.white70)),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+              ],
             ),
-            const Divider(color: Colors.white12),
-            // Post Creator Box
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF131324),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const CircleAvatar(radius: 20, backgroundImage: NetworkImage('https://picsum.photos/200?random=10')),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1B1B30),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text('Share something with Friends Zone...', style: TextStyle(color: Colors.white54, fontSize: 13)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: const [
-                        Row(children: [Icon(Icons.image, color: Colors.green, size: 18), SizedBox(width: 4), Text('Photo', style: TextStyle(fontSize: 12))]),
-                        Row(children: [Icon(Icons.videocam, color: Colors.pink, size: 18), SizedBox(width: 4), Text('Video', style: TextStyle(fontSize: 12))]),
-                        Row(children: [Icon(Icons.emoji_emotions, color: Colors.amber, size: 18), SizedBox(width: 4), Text('Feeling', style: TextStyle(fontSize: 12))]),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Post Card Example
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF131324),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      leading: const CircleAvatar(backgroundImage: NetworkImage('https://picsum.photos/200?random=20')),
-                      title: const Text('Arif Hasan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      subtitle: const Text('2h ago • 🌐', style: TextStyle(fontSize: 11, color: Colors.white54)),
-                      trailing: const Icon(Icons.more_horiz, color: Colors.white54),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('Nature always reminds us how beautiful life is... 🌿', style: TextStyle(color: Colors.white, fontSize: 13)),
-                    ),
-                    const SizedBox(height: 10),
-                    Stack(
-                      children: [
-                        Image.network('https://picsum.photos/600/350', height: 220, width: double.infinity, fit: BoxFit.cover),
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(10)),
-                            child: const Text('1/4', style: TextStyle(fontSize: 10, color: Colors.white)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Row(children: [Icon(Icons.favorite, color: Colors.pink, size: 18), SizedBox(width: 4), Text('842', style: TextStyle(fontSize: 12))]),
-                          Row(children: [Icon(Icons.chat_bubble_outline, color: Colors.white54, size: 18), SizedBox(width: 4), Text('67', style: TextStyle(fontSize: 12))]),
-                          Icon(Icons.bookmark_border, color: Colors.white54, size: 18),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
+    );
+  }
+
+  double _distance(
+    Map<String, dynamic> user,
+  ) {
+    if (_lat == null ||
+        _lon == null ||
+        user['latitude'] == null ||
+        user['longitude'] == null) {
+      return double.maxFinite;
+    }
+
+    return LocationService.distanceKm(
+      _lat!,
+      _lon!,
+      (user['latitude'] as num).toDouble(),
+      (user['longitude'] as num).toDouble(),
     );
   }
 }
