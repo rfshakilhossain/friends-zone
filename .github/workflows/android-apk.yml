@@ -29,10 +29,10 @@ jobs:
           cd fz_app
           flutter pub get
 
-      - name: Build Release APK Without Analysis
+      - name: Build Release APK Direct
         run: |
           cd fz_app
-          flutter build apk --release --no-pub --no-sound-null-safety || flutter build apk --release --no-pub
+          flutter build apk --release --no-pub
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
