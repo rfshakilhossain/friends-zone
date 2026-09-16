@@ -1,145 +1,206 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../coin_referral_manager.dart';
+import '../services/user_service.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _signOut(BuildContext context) async {
+    await UserService.instance.setOnline(false);
+    await Supabase.instance.client.auth.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
+    const bg = Color(0xFF0F051D);
+    const card = Color(0xFF1A0B2E);
+    const pink = Color(0xFFFF2E93);
+    const gold = Color(0xFFFFD700);
+
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Cover Photo & Header
-            Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                Image.network('https://picsum.photos/600/220', height: 180, width: double.infinity, fit: BoxFit.cover),
-                Positioned(
-                  top: 40,
-                  left: 10,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.black54,
-                    child: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () {}),
-                  ),
-                ),
-                Positioned(
-                  bottom: -45,
-                  child: Container(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        title: const Text('My Profile & Rewards'),
+        centerTitle: true,
+      ),
+      body: StreamBuilder<Map<String, dynamic>?>(
+        stream: UserService.instance.currentUserStream(),
+        builder: (context, snapshot) {
+          final p = snapshot.data ?? const <String, dynamic>{};
+          final authUser = Supabase.instance.client.auth.currentUser;
+
+          final name = (p['display_name'] ??
+                  authUser?.email?.split('@').first ??
+                  'Friends Zone User')
+              .toString();
+
+          final email =
+              (p['email'] ?? authUser?.email ?? '').toString();
+
+          final avatarUrl = (p['avatar_url'] ?? '').toString();
+
+          return FutureBuilder<List<int>>(
+            future: Future.wait<int>([
+              CoinReferralManager.getCoins(),
+              CoinReferralManager.getReferrals(),
+            ]),
+            builder: (context, economySnapshot) {
+              final economy = economySnapshot.data ?? const [0, 0];
+              final tokens = economy[0];
+              final referrals = economy[1];
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(3),
-                      child: CircleAvatar(
-                        radius: 45,
-                        backgroundImage: NetworkImage('https://picsum.photos/200?random=30'),
+                      color: card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: pink.withOpacity(.5),
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundColor: pink,
+                          backgroundImage: avatarUrl.isNotEmpty
+                              ? NetworkImage(avatarUrl)
+                              : null,
+                          child: avatarUrl.isEmpty
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                email,
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: gold.withOpacity(.15),
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: gold),
+                                ),
+                                child: economySnapshot
+                                            .connectionState ==
+                                        ConnectionState.waiting
+                                    ? const SizedBox(
+                                        height: 16,
+                                        width: 16,
+                                        child:
+                                            CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: gold,
+                                        ),
+                                      )
+                                    : Text(
+                                        'FZ Tokens: $tokens',
+                                        style: const TextStyle(
+                                          color: gold,
+                                          fontWeight:
+                                              FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 50),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text('Arif Hasan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                SizedBox(width: 4),
-                Icon(Icons.verified, color: Colors.blue, size: 18),
-              ],
-            ),
-            const Text('@arifhasan', style: TextStyle(fontSize: 12, color: Colors.white54)),
-            const SizedBox(height: 6),
-            const Text('Dreamer • Traveler • Tech Lover 🌿', style: TextStyle(fontSize: 12, color: Colors.white70)),
-            const SizedBox(height: 4),
-            const Text('📍 Dhaka, Bangladesh   🟢 Online', style: TextStyle(fontSize: 11, color: Colors.white54)),
-            const SizedBox(height: 15),
-            // Stats Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
-                Column(children: [Text('1.2K', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Followers', style: TextStyle(fontSize: 11, color: Colors.white54))]),
-                Column(children: [Text('356', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Following', style: TextStyle(fontSize: 11, color: Colors.white54))]),
-                Column(children: [Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), Text('Posts', style: TextStyle(fontSize: 11, color: Colors.white54))]),
-              ],
-            ),
-            const SizedBox(height: 15),
-            // Action Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFE040FB), Color(0xFF7C4DFF)]),
-                    borderRadius: BorderRadius.circular(20),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: card,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Referral Rewards',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Total Referrals: $referrals / 100',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value:
+                              (referrals / 100).clamp(0, 1).toDouble(),
+                          color: pink,
+                          backgroundColor: Colors.white12,
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Token and referral rewards are controlled by the trusted backend.',
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF131324),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white12),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => _signOut(context),
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Sign out'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: pink,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
-                  child: const Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            // FZ Tokens & Rewards Card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF131324),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(children: const [
-                      Icon(Icons.monetization_on, color: Colors.amber),
-                      SizedBox(width: 8),
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('FZ Tokens', style: TextStyle(fontSize: 11, color: Colors.white54)),
-                        Text('250 >', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      ]),
-                    ]),
-                    Container(height: 30, width: 1, color: Colors.white12),
-                    Row(children: const [
-                      Icon(Icons.card_giftcard, color: Color(0xFFE040FB)),
-                      SizedBox(width: 8),
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('Referral Rewards', style: TextStyle(fontSize: 11, color: Colors.white54)),
-                        Text('12 / 50', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      ]),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            // Posts Grid View
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 6,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
-              ),
-              itemBuilder: (context, index) {
-                return Image.network('https://picsum.photos/200?random=${index + 40}', fit: BoxFit.cover);
-              },
-            ),
-          ],
-        ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
