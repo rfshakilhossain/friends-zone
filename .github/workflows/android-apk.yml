@@ -21,15 +21,15 @@ jobs:
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.x'
+          flutter-version: '3.24.0' # একটি স্টেবল এবং আধুনিক ফ্লাটার ভার্সন
           channel: 'stable'
 
       - name: Install Dependencies
         run: |
           cd fz_app
-          flutter pub get
+          flutter pub get --no-pubspec-overrides
 
-      - name: Build Release APK without Analyze
+      - name: Build Release APK
         run: |
           cd fz_app
           flutter build apk --release --no-pub
